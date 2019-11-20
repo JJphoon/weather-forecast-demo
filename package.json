@@ -9,6 +9,9 @@
     "prebuild:pdf": "npm run build:table",
     "build:pdf": "node ./createPdf.js"
   },
+  "engines": {
+    "node": "8.9.3"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
