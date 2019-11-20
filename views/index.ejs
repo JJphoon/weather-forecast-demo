@@ -1,0 +1,143 @@
+  <!doctype html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.3/angular-route.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+  <style>
+    /* Few styles :) */
+    .share-btn > a {
+        border: 1px solid #ccc;
+        padding: 5px;
+        font-size: 12px;
+        font-family: Verdana, Arial;
+    }
+    .share-btn > a:hover {
+        cursor: pointer;
+    }
+</style>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqdLAPb71C43fwP7wWqxzUzYaXynZ_LBA&libraries=places&callback=initMap"></script>
+  
+
+  <script>
+
+    function initMap() {
+      // The location of KL
+      var kl = {lat: 3.139003, lng: 101.686852};
+      // The map, centered at KL
+      var map = new google.maps.Map(
+          document.getElementById('googleMap'), {zoom: 7, center: kl});
+      // The marker, positioned at KL
+      var marker = new google.maps.Marker({
+        position: kl, 
+        map: map,
+        draggable: true
+      });
+      var infowindow =  new google.maps.InfoWindow({
+        content: ""
+      });
+      google.maps.event.addListener(map, 'click', function(event) {
+        infowindow.close();
+        placeMarker(event.latLng);
+        //var city;
+        var weatherStatus;
+        var temperature;
+        var windSpeed;
+        var infoWindowContent;
+        var lat = event.latLng.lat();
+        var lng = event.latLng.lng();
+        fetch('/cityWeather', {
+            method: 'POST',
+            headers: {
+                'Content-Type' : 'application/json',
+                'Accept' : 'application/json'
+            },
+            body: JSON.stringify({
+                latitude: lat,
+                longitude: lng
+            })
+        }).then(res => res.json()).then(data => {
+            //city = place.formatted_address;
+            weatherStatus = data.summary;
+            temperature = data.temperature;
+            windSpeed = data.windSpeed;
+            //alert(temperature)
+            infoWindowContent = '<b>Weather</b><br/>' + weatherStatus + '<br/>Temperature: ' + temperature + '<br/>Wind Speed: ' + windSpeed;
+            //setWeatherData(data, place.formatted_address)
+            infowindow = new google.maps.InfoWindow({
+              content: infoWindowContent,
+              maxWidth: 200,
+              maxHeight: 200
+            });
+            infowindow.open(map, marker);
+        })
+        
+        
+        //alert(lat + " " + lng);
+      });
+      
+
+      function placeMarker(location) {
+        if (marker == null)
+        {
+          marker = new google.maps.Marker({
+            position: location,
+            map: map
+          });
+        } else {   
+          marker.setPosition(location);
+        } 
+        
+      }
+
+    }
+
+  </script>
+
+</head>
+  <body>
+  <div>
+  <div>
+  <nav class="navbar navbar-inverse" role="navigation" style="padding-left:130px;">
+         <ul class="nav navbar-nav">
+        <li class="active"><a href="/">Home<span class="sr-only">(current)</span></a></li>
+        <li><a href="/map">Map</a></li>
+        <li><a href="/contact">Contact us</a></li>
+        <li><a href="/build">Table</a></li>
+        <li><a href="http://weather.amcharts.com/" >Weather</a></li>
+      </ul>
+  </nav>
+  </div>
+  <br/>
+  <div align = "center">
+  <div id="googleMap" style="width:95%;height:600px;"></div>
+  </div>
+  </div>
+
+<!-- Load Facebook SDK for JavaScript -->
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<!-- Your share button code -->
+<div class="fb-share-button" 
+  data-href="https://www.facebook.com" 
+  data-layout="button_count" style="margin-top:10px; margin-left:15px">
+</div>
+ 
+<div align = "right">
+ <form action="/logout?_method=DELETE" method="POST">
+   <button type="submit" style="margin-right:15px">Log Out</button>
+ </form>
+</div>
+
+</body>
+</html>
